@@ -1,20 +1,37 @@
 {
-  "version": 2,
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
-  "build": {
-    "env": {
-      "VITE_SCANNER_ONLY": "true"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "api": {
+      "root": "api",
+      "framework": "fastapi",
+      "entrypoint": "index:app"
+    },
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite",
+      "build": {
+        "env": {
+          "VITE_SCANNER_ONLY": "true"
+        }
+      },
+      "bindings": [
+        {
+          "type": "service",
+          "service": "api",
+          "format": "url",
+          "env": "VITE_API_URL"
+        }
+      ]
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.py"
+      "destination": { "service": "api" }
     },
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": { "service": "frontend" }
     }
   ]
 }

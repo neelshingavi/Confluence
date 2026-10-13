@@ -1,0 +1,10 @@
+backend/
+scripts/
+tests/
+data/
+docs/
+.venv/
+.pytest_cache/
+*.local
+start.sh
+supabase_schema.sql

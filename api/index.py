@@ -19,10 +19,11 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from sqlalchemy.pool import NullPool
 from starlette.middleware.sessions import SessionMiddleware
 
-# Add backend directory to sys.path so we can import models and security
-ROOT_DIR = Path(__file__).resolve().parent.parent
-BACKEND_DIR = ROOT_DIR / "backend"
-sys.path.insert(0, str(BACKEND_DIR))
+API_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(API_DIR))
+BACKEND_DIR = API_DIR.parent / "backend"
+if BACKEND_DIR.exists():
+    sys.path.insert(0, str(BACKEND_DIR))
 
 from app.models import Event, User, Attendee, Ticket, CheckIn, ScanAttempt, AuditLog, utcnow
 from app.schemas import LoginInput, ScanInput
