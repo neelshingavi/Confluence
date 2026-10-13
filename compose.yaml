@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: confluence
+      POSTGRES_USER: confluence
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/setup_local.py and keep the generated .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U confluence -d confluence"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks: [internal]
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://confluence:${POSTGRES_PASSWORD}@db:5432/confluence
+      SESSION_SECRET: ${SESSION_SECRET:?Run scripts/setup_local.py and set a private secret}
+      APP_FERNET_KEY: ${APP_FERNET_KEY:?Run scripts/setup_local.py and keep the generated key}
+      QR_TOKEN_PEPPER: ${QR_TOKEN_PEPPER:?Run scripts/setup_local.py and keep the generated pepper}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      DATA_DIR: /data
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - app_data:/data
+    networks: [internal]
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  app_data:
+  postgres_data:
