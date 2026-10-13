@@ -1,0 +1,7 @@
+fastapi>=0.115,<1.0
+SQLAlchemy>=2.0.40,<3.0
+psycopg[binary]>=3.2,<4.0
+cryptography>=44.0,<47.0
+itsdangerous>=2.2,<3.0
+pydantic>=2.9,<3.0
+python-dotenv>=1.0
