@@ -25,9 +25,10 @@ def verify_password(password: str, stored: str) -> bool:
 
 
 def _fernet() -> Fernet:
+    """Fernet is only used for ticket generation (local backend). Not required for scanner-only deployments."""
     key = os.getenv("APP_FERNET_KEY", "")
     if not key:
-        raise RuntimeError("APP_FERNET_KEY is required; generate it with Fernet.generate_key().decode()")
+        raise RuntimeError("APP_FERNET_KEY is required for ticket generation; generate it with Fernet.generate_key().decode()")
     try:
         return Fernet(key.encode())
     except (ValueError, TypeError) as exc:
@@ -58,9 +59,11 @@ def scan_fingerprint(token: str) -> str:
 
 
 def validate_security_configuration() -> None:
+    """Validates security config required for the scanner-only Vercel deployment.
+    APP_FERNET_KEY is NOT required here — it's only needed for local ticket generation.
+    """
     secret = os.getenv("SESSION_SECRET", "")
     if len(secret) < 32 or "change-me" in secret.lower():
         raise RuntimeError("Set SESSION_SECRET to a unique random value of at least 32 characters")
-    _fernet()
     if len(os.getenv("QR_TOKEN_PEPPER", "")) < 32:
         raise RuntimeError("Set QR_TOKEN_PEPPER to a unique random value of at least 32 characters")
