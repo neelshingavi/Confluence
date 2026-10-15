@@ -120,7 +120,7 @@ def normalize_header(value: str) -> str:
 
 HEADER_ALIASES = {
     "name": {"name", "fullname", "studentname", "attendeename", "attendee", "participantname"},
-    "year": {"year", "studyyear", "academicyear", "class", "courseyear", "studentyear"},
+    "year": {"year", "studyyear", "academicyear", "class", "courseyear", "studentyear", "yeardept", "yeardeptegtyce"},
     "email": {"email", "emailaddress", "mailid", "emailid"},
     "phone": {"phone", "phonenumber", "mobile", "mobilenumber", "contactnumber", "contact", "whatsapp"},
 }
