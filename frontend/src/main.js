@@ -148,7 +148,7 @@ function renderLogin(message = '') {
         <h2>Welcome back</h2>
         <p>${isScanner ? 'Sign in with your staff account to start scanning.' : 'Sign in with the account created by the event owner. Attendees do not need an account.'}</p>
         ${message ? `<div class="notice notice-error">${esc(message)}</div>` : ''}
-        <div class="field"><label for="loginEmail">Work email</label><input id="loginEmail" name="email" type="email" autocomplete="username" required placeholder="staff@confluence.local"></div>
+        <div class="field"><label for="loginEmail">Login ID or email</label><input id="loginEmail" name="email" type="text" autocomplete="username" required placeholder="12345678"></div>
         <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password"></div>
         <button class="button button-primary full" type="submit">Sign in securely <span>→</span></button>
         <div class="footer-note">Access attempts are rate limited. Contact the event organizer if your account is inactive or you need access.</div>
