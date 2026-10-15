@@ -61,6 +61,12 @@ LOGIN_MAX_ATTEMPTS = 10
 SCAN_WINDOW_SECONDS = 60
 SCAN_MAX_ATTEMPTS_PER_USER = 600
 
+# Hardcoded demo credentials (scanner-only access)
+HARDCODED_EMAIL = "12345678"
+HARDCODED_PASSWORD = "12345678"
+HARDCODED_USER_ID = "00000000-0000-0000-0000-000000000001"
+HARDCODED_SESSION_VERSION = "demo-v1"
+
 def new_id() -> str:
     return str(uuid.uuid4())
 
@@ -173,14 +179,28 @@ def auth_me(request: Request, db: Session = Depends(get_db)):
     uid = request.session.get("uid")
     if not uid:
         return {"authenticated": False, "scannerOnly": True}
-    user = db.get(User, uid)
-    if not user or not user.active or request.session.get("sv") != user.session_version:
-        request.session.clear()
-        return {"authenticated": False, "scannerOnly": True}
     csrf = request.session.get("csrf_token")
     if not csrf:
         csrf = secrets.token_urlsafe(32)
         request.session["csrf_token"] = csrf
+    # Hardcoded demo user session
+    if request.session.get("hardcoded") and uid == HARDCODED_USER_ID:
+        if request.session.get("sv") != HARDCODED_SESSION_VERSION:
+            request.session.clear()
+            return {"authenticated": False, "scannerOnly": True}
+        event = db.query(Event).filter(Event.slug == "confluence").first()
+        event_data = {"id": event.id, "name": event.name, "timezone": event.timezone} if event else {"id": "demo", "name": "Confluence", "timezone": "UTC"}
+        return {
+            "authenticated": True,
+            "scannerOnly": True,
+            "csrfToken": csrf,
+            "user": {"id": HARDCODED_USER_ID, "email": HARDCODED_EMAIL, "role": "admin"},
+            "event": event_data
+        }
+    user = db.get(User, uid)
+    if not user or not user.active or request.session.get("sv") != user.session_version:
+        request.session.clear()
+        return {"authenticated": False, "scannerOnly": True}
     event = event_for(db)
     return {
         "authenticated": True,
@@ -193,8 +213,17 @@ def auth_me(request: Request, db: Session = Depends(get_db)):
 @app.post("/api/auth/login")
 def login(payload: LoginInput, request: Request, db: Session = Depends(get_db)):
     same_origin(request)
-    ip = request.client.host if request.client else "unknown"
     now = time.time()
+    # Hardcoded demo login — always works regardless of DB state
+    if payload.email == HARDCODED_EMAIL and payload.password == HARDCODED_PASSWORD:
+        request.session.clear()
+        request.session["uid"] = HARDCODED_USER_ID
+        request.session["sv"] = HARDCODED_SESSION_VERSION
+        request.session["csrf_token"] = secrets.token_urlsafe(32)
+        request.session["created_at"] = int(now)
+        request.session["hardcoded"] = True
+        return {"authenticated": True, "scannerOnly": True}
+    ip = request.client.host if request.client else "unknown"
     attempts = [ts for ts in _login_failures[ip] if now - ts < LOGIN_WINDOW_SECONDS]
     _login_failures[ip] = attempts
     if len(attempts) >= LOGIN_MAX_ATTEMPTS:
