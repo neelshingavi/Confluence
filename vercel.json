@@ -9,11 +9,6 @@
     "frontend": {
       "root": "frontend",
       "framework": "vite",
-      "build": {
-        "env": {
-          "VITE_SCANNER_ONLY": "true"
-        }
-      },
       "bindings": [
         {
           "type": "service",
